@@ -1,5 +1,5 @@
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Coffee } from './entities/coffee.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -7,6 +7,14 @@ import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { Flavor } from './entities/flavor.entity';
 import { Event } from 'src/events/entities/event.entity';
+import {
+  COFFEE_BRANDS,
+  COFFEE_BRANDS_FACTORY,
+  COFFEE_BRANDS_FACTORY_ASYNC,
+} from './coffees.constants';
+import { CoffeeBrandsFactory } from './coffee-brands.factory';
+import { ConfigService, ConfigType } from '@nestjs/config';
+import coffeesConfig from 'src/config/coffees.config';
 
 @Injectable()
 export class CoffeesService {
@@ -16,7 +24,21 @@ export class CoffeesService {
     @InjectRepository(Flavor)
     private readonly flavorRepository: Repository<Flavor>,
     private readonly dataSource: DataSource,
-  ) {}
+    // private readonly configService: ConfigService,
+    @Inject(coffeesConfig.KEY)
+    private readonly coffeesConfiguration: ConfigType<typeof coffeesConfig>,
+    @Inject(COFFEE_BRANDS) coffeeBrands: string[],
+    @Inject(COFFEE_BRANDS_FACTORY) coffeeBrandsFactory: CoffeeBrandsFactory,
+    @Inject(COFFEE_BRANDS_FACTORY_ASYNC)
+    coffeeBrandsFactoryAsync: Promise<string[]>,
+  ) {
+    console.log(coffeeBrands);
+    console.log(coffeeBrandsFactory.create());
+    console.log(coffeeBrandsFactoryAsync);
+    coffeeBrandsFactory.getAsync().then((brands) => console.log(brands));
+    // console.log('[!] Partial registration', this.configService.get('coffees')); // Less typed and safe because we may not know what is in 'coffees'
+    console.log('[!] Partial registration', this.coffeesConfiguration); // More typed and safe
+  }
 
   findAll(paginationQueryDto: PaginationQueryDto) {
     const { take, skip } = paginationQueryDto;

@@ -9,7 +9,6 @@ export class Event {
   @Column()
   type: string;
 
-  @Index()
   @Column()
   name: string;
 
